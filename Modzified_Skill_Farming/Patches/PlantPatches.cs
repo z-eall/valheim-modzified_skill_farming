@@ -44,7 +44,7 @@ internal static class Plant_Grow_Patch
       return true;
     }
 
-    int percent = GrowChance.Percent(level, GrowChance.OutsideBiome(__instance, zdo));
+    float percent = GrowChance.Percent(level, GrowChance.OutsideBiome(__instance, zdo));
     if (percent >= 100 || GrowChance.Roll(__instance.m_seed) < percent)
     {
       return true;
@@ -53,7 +53,7 @@ internal static class Plant_Grow_Patch
     if (Settings.DebugOn)
     {
       SkillFarmingPlugin.LogAt(BepInEx.Logging.LogLevel.Debug,
-        $"{SkillFarmingPlugin.ModName}: {__instance.name} failed its grow roll ({percent}%).");
+        $"{SkillFarmingPlugin.ModName}: {__instance.name} failed its grow roll ({percent:0.##}%).");
     }
 
     __instance.m_nview.Destroy();

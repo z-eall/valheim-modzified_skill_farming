@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BepInEx.Configuration;
 using BepInEx.Logging;
 using ServerSync;
@@ -17,28 +18,30 @@ internal static class Settings
   internal static ConfigSync Sync { get; private set; } = null!;
 
   internal static ConfigEntry<LogLevel> LogLevels { get; private set; } = null!;
-  internal static ConfigEntry<int> GrowChanceAt0 { get; private set; } = null!;
-  internal static ConfigEntry<int> GrowChanceAtMax { get; private set; } = null!;
-  internal static ConfigEntry<int> GrowthCutAt0 { get; private set; } = null!;
-  internal static ConfigEntry<int> GrowthCutAtMax { get; private set; } = null!;
-  internal static ConfigEntry<int> CultivatorStaminaAt0 { get; private set; } = null!;
-  internal static ConfigEntry<int> CultivatorStaminaAtMax { get; private set; } = null!;
+  internal static ConfigEntry<float> GrowChanceAt0 { get; private set; } = null!;
+  internal static ConfigEntry<float> GrowChanceAtMax { get; private set; } = null!;
+  internal static ConfigEntry<float> GrowthCutAt0 { get; private set; } = null!;
+  internal static ConfigEntry<float> GrowthCutAtMax { get; private set; } = null!;
+  internal static ConfigEntry<float> CultivatorStaminaAt0 { get; private set; } = null!;
+  internal static ConfigEntry<float> CultivatorStaminaAtMax { get; private set; } = null!;
   internal static ConfigEntry<int> PlantAnywhereLevel { get; private set; } = null!;
-  internal static ConfigEntry<int> BiomePenalty { get; private set; } = null!;
-  internal static ConfigEntry<int> SweepAt0 { get; private set; } = null!;
-  internal static ConfigEntry<int> SweepAtMax { get; private set; } = null!;
-  internal static ConfigEntry<int> ScytheStaminaAt0 { get; private set; } = null!;
-  internal static ConfigEntry<int> ScytheStaminaAtMax { get; private set; } = null!;
-  internal static ConfigEntry<int> BonusChanceAt0 { get; private set; } = null!;
-  internal static ConfigEntry<int> BonusChanceAtMax { get; private set; } = null!;
+  internal static ConfigEntry<float> BiomePenalty { get; private set; } = null!;
+  internal static ConfigEntry<float> SweepAt0 { get; private set; } = null!;
+  internal static ConfigEntry<float> SweepAtMax { get; private set; } = null!;
+  internal static ConfigEntry<float> ScytheStaminaAt0 { get; private set; } = null!;
+  internal static ConfigEntry<float> ScytheStaminaAtMax { get; private set; } = null!;
+  internal static ConfigEntry<string> ScytheAllow { get; private set; } = null!;
+  internal static ConfigEntry<float> BonusChanceAt0 { get; private set; } = null!;
+  internal static ConfigEntry<float> BonusChanceAtMax { get; private set; } = null!;
 
+  internal static HashSet<int> ScytheAllowHashes = new();
   internal static int AnywhereLevel = -1;
-  internal static int StaminaMin, StaminaMax;
-  internal static int ScytheStaminaMin, ScytheStaminaMax = 33;
-  internal static int ChanceMin = 50, ChanceMax = 100, Penalty = 20;
-  internal static int GrowthMin, GrowthMax;
-  internal static int BonusMin, BonusMax = 25;
-  internal static int SweepMin, SweepMax;
+  internal static float StaminaMin, StaminaMax;
+  internal static float ScytheStaminaMin, ScytheStaminaMax = 33f;
+  internal static float ChanceMin = 50f, ChanceMax = 100f, Penalty = 20f;
+  internal static float GrowthMin, GrowthMax;
+  internal static float BonusMin, BonusMax = 25f;
+  internal static float SweepMin, SweepMax;
   internal static bool GrowthActive, SweepActive, DebugOn;
   internal static int Version;
 
@@ -52,36 +55,36 @@ internal static class Settings
       IsLocked = true
     };
 
-    var percent = new AcceptableValueRange<int>(0, 100);
-    var growth = new AcceptableValueRange<int>(0, 90);
-    var penalty = new AcceptableValueRange<int>(0, 50);
+    var percent = new AcceptableValueRange<float>(0f, 100f);
+    var growth = new AcceptableValueRange<float>(0f, 90f);
+    var penalty = new AcceptableValueRange<float>(0f, 50f);
 
-    GrowChanceAt0 = BindSynced(config, SectionCultivator, "Grow chance at skill 0", 50,
+    GrowChanceAt0 = BindSynced(config, SectionCultivator, "Grow chance at skill 0", 50f,
       new ConfigDescription(
         "Plant grow chance % at Farming skill 0. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 8, ShowRangeAsPercent = false }));
-    GrowChanceAtMax = BindSynced(config, SectionCultivator, "Grow chance at skill max", 100,
+    GrowChanceAtMax = BindSynced(config, SectionCultivator, "Grow chance at skill max", 100f,
       new ConfigDescription(
         "Plant grow chance % at Farming skill max. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 7, ShowRangeAsPercent = false }));
-    GrowthCutAt0 = BindSynced(config, SectionCultivator, "Growth time reduction at skill 0", 0,
+    GrowthCutAt0 = BindSynced(config, SectionCultivator, "Growth time reduction at skill 0", 0f,
       new ConfigDescription(
         "Growth time reduction % at Farming skill 0. [Server Synced]",
         growth,
         new ConfigurationManagerAttributes { Order = 6, ShowRangeAsPercent = false }));
-    GrowthCutAtMax = BindSynced(config, SectionCultivator, "Growth time reduction at skill max", 50,
+    GrowthCutAtMax = BindSynced(config, SectionCultivator, "Growth time reduction at skill max", 50f,
       new ConfigDescription(
         "Growth time reduction % at Farming skill max. [Server Synced]",
         growth,
         new ConfigurationManagerAttributes { Order = 5, ShowRangeAsPercent = false }));
-    CultivatorStaminaAt0 = BindSynced(config, SectionCultivator, "Cultivator stamina reduction at skill 0", 0,
+    CultivatorStaminaAt0 = BindSynced(config, SectionCultivator, "Cultivator stamina reduction at skill 0", 0f,
       new ConfigDescription(
         "Stamina reduction % of Cultivator use at Farming skill 0. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 4, ShowRangeAsPercent = false }));
-    CultivatorStaminaAtMax = BindSynced(config, SectionCultivator, "Cultivator stamina reduction at skill max", 50,
+    CultivatorStaminaAtMax = BindSynced(config, SectionCultivator, "Cultivator stamina reduction at skill max", 50f,
       new ConfigDescription(
         "Stamina reduction % of Cultivator use at Farming skill max. [Server Synced]",
         percent,
@@ -92,43 +95,50 @@ internal static class Settings
         "Value -1 disables this feature. The level is capped at 100 unless a mod raises the skill cap. [Server Synced]",
         new AcceptableValueRange<int>(-1, 250),
         new ConfigurationManagerAttributes { Order = 2 }));
-    BiomePenalty = BindSynced(config, SectionCultivator, "Out-of-biome grow chance penalty", 20,
+    BiomePenalty = BindSynced(config, SectionCultivator, "Out-of-biome grow chance penalty", 20f,
       new ConfigDescription(
         "Plant grow chance % reduction when a plant grows outside its native biome.\n" +
         "This only matters when \"Plant anywhere\" is on. [Server Synced]",
         penalty,
         new ConfigurationManagerAttributes { Order = 1, ShowRangeAsPercent = false }));
 
-    SweepAt0 = BindSynced(config, SectionScythe, "Scythe radius expansion at skill 0", 0,
+    SweepAt0 = BindSynced(config, SectionScythe, "Scythe radius expansion at skill 0", 0f,
       new ConfigDescription(
         "Harvest radius expansion % of the Scythe at Farming skill 0.\n" +
         "The number is a percent on top of the vanilla radius. 0 keeps the vanilla radius. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 4, ShowRangeAsPercent = false }));
-    SweepAtMax = BindSynced(config, SectionScythe, "Scythe radius expansion at skill max", 0,
+    SweepAtMax = BindSynced(config, SectionScythe, "Scythe radius expansion at skill max", 0f,
       new ConfigDescription(
         "Harvest radius expansion % of the Scythe at Farming skill max.\n" +
         "The number is a percent on top of the vanilla radius. 0 keeps the vanilla radius. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 3, ShowRangeAsPercent = false }));
-    ScytheStaminaAt0 = BindSynced(config, SectionScythe, "Scythe stamina reduction at skill 0", 0,
+    ScytheStaminaAt0 = BindSynced(config, SectionScythe, "Scythe stamina reduction at skill 0", 0f,
       new ConfigDescription(
         "Stamina reduction % of Scythe use at Farming skill 0. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 2, ShowRangeAsPercent = false }));
-    ScytheStaminaAtMax = BindSynced(config, SectionScythe, "Scythe stamina reduction at skill max", 33,
+    ScytheStaminaAtMax = BindSynced(config, SectionScythe, "Scythe stamina reduction at skill max", 33f,
       new ConfigDescription(
         "Stamina reduction % of Scythe use at Farming skill max. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 1, ShowRangeAsPercent = false }));
 
-    BonusChanceAt0 = BindSynced(config, SectionBonusYield, "Bonus yield chance at skill 0", 0,
+    ScytheAllow = BindSynced(config, SectionScythe, "Allow Scythe to harvest", "Pickable_Mushroom_JotunPuffs, Pickable_Mushroom_Magecap, VineAsh",
+      new ConfigDescription(
+        "Prefab names the Scythe can also harvest. Separate names with commas.\n" +
+        "Use it for plants the vanilla Scythe skips, such as Jotun Puffs, Magecap and the vines. An empty list keeps the vanilla behavior. [Server Synced]",
+        null,
+        new ConfigurationManagerAttributes { Order = 0 }));
+
+    BonusChanceAt0 = BindSynced(config, SectionBonusYield, "Bonus yield chance at skill 0", 0f,
       new ConfigDescription(
         "Bonus chance to get one extra yield at Farming skill 0.\n" +
         "Affects picking and scything. [Server Synced]",
         percent,
         new ConfigurationManagerAttributes { Order = 2, ShowRangeAsPercent = false }));
-    BonusChanceAtMax = BindSynced(config, SectionBonusYield, "Bonus yield chance at skill max", 25,
+    BonusChanceAtMax = BindSynced(config, SectionBonusYield, "Bonus yield chance at skill max", 25f,
       new ConfigDescription(
         "Bonus chance to get one extra yield at Farming skill max.\n" +
         "Affects picking and scything. [Server Synced]",
@@ -162,6 +172,7 @@ internal static class Settings
     BonusMax = BonusChanceAtMax.Value;
     SweepMin = SweepAt0.Value;
     SweepMax = SweepAtMax.Value;
+    ScytheAllowHashes = ParseNames(ScytheAllow.Value);
     GrowthActive = GrowthMin > 0 || GrowthMax > 0;
     SweepActive = SweepMin > 0 || SweepMax > 0;
     DebugOn = (LogLevels.Value & LogLevel.Debug) != LogLevel.None;
@@ -170,6 +181,21 @@ internal static class Settings
     {
       BiomeFree.Sweep();
     }
+  }
+
+  private static HashSet<int> ParseNames(string list)
+  {
+    var hashes = new HashSet<int>();
+    foreach (string part in list.Split(','))
+    {
+      string name = part.Trim();
+      if (name.Length > 0)
+      {
+        hashes.Add(name.GetStableHashCode());
+      }
+    }
+
+    return hashes;
   }
 
   private static void WarnInvertedEnds()

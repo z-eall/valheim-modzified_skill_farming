@@ -4,8 +4,8 @@ namespace Modzified_Skill_Farming;
 
 internal static class PlantHover
 {
-  private const string Yellow = "#FFD24A";
-  private const string Green = "#6EE06E";
+  private const string Yellow = "yellow";
+  private const string Green = "green";
 
   private static Plant? _plant;
   private static int _second = -2;
@@ -51,12 +51,12 @@ internal static class PlantHover
   private static string Build(Plant plant, ZDO zdo, float level, int seconds)
   {
     bool outside = GrowChance.OutsideBiome(plant, zdo);
-    int percent = GrowChance.Percent(level, outside);
+    float percent = GrowChance.Percent(level, outside);
     var text = new StringBuilder("\nGrow Chance: <color=");
-    text.Append(percent >= 75 ? Green : Yellow).Append('>').Append(percent).Append("%</color>");
+    text.Append(percent >= 75f ? Green : Yellow).Append('>').Append(percent.ToString("0.##")).Append("%</color>");
     if (outside && Settings.Penalty > 0)
     {
-      text.Append(" (-").Append(Settings.Penalty).Append("% biome)");
+      text.Append(" ( -").Append(Settings.Penalty.ToString("0.##")).Append("% Biome penalty )");
     }
 
     if (seconds >= 0)

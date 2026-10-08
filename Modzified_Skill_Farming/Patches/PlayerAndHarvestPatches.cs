@@ -56,6 +56,36 @@ internal static class Pickable_Interact_Patch
   }
 }
 
+[HarmonyPatch(typeof(Pickable), nameof(Pickable.SetPicked))]
+internal static class Pickable_SetPicked_Patch
+{
+  private static void Postfix(Pickable __instance, bool picked)
+  {
+    if (!picked)
+    {
+      __instance.m_pickedLocal = false;
+    }
+  }
+}
+
+[HarmonyPatch(typeof(Attack), nameof(Attack.Start))]
+internal static class Attack_Start_HarvestMask_Patch
+{
+  private static int _baseMask;
+  private static int _viewMask;
+
+  private static void Postfix()
+  {
+    if (_viewMask == 0)
+    {
+      _viewMask = UnityEngine.LayerMask.GetMask("viewblock");
+      _baseMask = UnityEngine.LayerMask.GetMask("piece", "piece_nonsolid", "item");
+    }
+
+    Attack.m_harvestRayMask = Settings.ScytheAllowHashes.Count > 0 ? _baseMask | _viewMask : _baseMask;
+  }
+}
+
 [HarmonyPatch(typeof(Attack), nameof(Attack.DoMeleeAttack))]
 internal static class Attack_DoMeleeAttack_Patch
 {
@@ -63,5 +93,15 @@ internal static class Attack_DoMeleeAttack_Patch
   {
     return TranspilerUtil.ReplaceLerpAfterSkillFactor(instructions,
       AccessTools.Method(typeof(WiderSweep), nameof(WiderSweep.Radius)), "Attack.DoMeleeAttack");
+  }
+}
+
+[HarmonyPatch(typeof(Attack), nameof(Attack.DoMeleeAttack))]
+internal static class Attack_DoMeleeAttack_Reach_Patch
+{
+  private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+  {
+    return TranspilerUtil.ReplaceGetComponent(instructions, typeof(Pickable),
+      AccessTools.Method(typeof(ScytheReach), nameof(ScytheReach.Resolve)), "Attack.DoMeleeAttack reach");
   }
 }

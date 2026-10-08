@@ -4,9 +4,9 @@ namespace Modzified_Skill_Farming;
 
 internal static class GrowChance
 {
-  internal static int Percent(float plantedLevel, bool outsideBiome)
+  internal static float Percent(float plantedLevel, bool outsideBiome)
   {
-    int percent = Mathf.RoundToInt(PlanterLevel.Curve(Settings.ChanceMin, Settings.ChanceMax, plantedLevel));
+    float percent = PlanterLevel.Curve(Settings.ChanceMin, Settings.ChanceMax, plantedLevel);
     if (outsideBiome)
     {
       percent -= Settings.Penalty;
@@ -32,7 +32,7 @@ internal static class GrowChance
     return (heightmap.GetBiome(position) & native.Biome) == 0;
   }
 
-  internal static int Roll(int seed)
+  internal static float Roll(int seed)
   {
     uint h = (uint)seed ^ 0x9E3779B9u;
     h ^= h >> 16;
@@ -40,6 +40,6 @@ internal static class GrowChance
     h ^= h >> 15;
     h *= 0x846ca68bu;
     h ^= h >> 16;
-    return (int)(h % 100u);
+    return h % 10000u / 100f;
   }
 }

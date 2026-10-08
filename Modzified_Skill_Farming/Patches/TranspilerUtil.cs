@@ -65,6 +65,26 @@ internal static class TranspilerUtil
     return Finish(codes, instructions, hits, patchName);
   }
 
+  internal static IEnumerable<CodeInstruction> ReplaceGetComponent(
+    IEnumerable<CodeInstruction> instructions, System.Type component, MethodInfo replacement, string patchName)
+  {
+    var codes = new List<CodeInstruction>(instructions);
+    int hits = 0;
+    for (int i = 0; i < codes.Count; i++)
+    {
+      if (IsCall(codes[i], "GetComponent")
+          && codes[i].operand is MethodInfo method
+          && method.IsGenericMethod
+          && method.GetGenericArguments()[0] == component)
+      {
+        codes[i] = new CodeInstruction(OpCodes.Call, replacement);
+        hits++;
+      }
+    }
+
+    return Finish(codes, instructions, hits, patchName);
+  }
+
   private static IEnumerable<CodeInstruction> Finish(
     List<CodeInstruction> patched, IEnumerable<CodeInstruction> original, int hits, string patchName)
   {
